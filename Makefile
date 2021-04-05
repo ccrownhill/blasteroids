@@ -1,16 +1,18 @@
 CC = gcc
 CLFAGS = -Wall
-INCS = -I.
 LIBS = -lm -lallegro -lallegro_primitives -lallegro_font
 SRC = blasteroids.c asteroid.c blast.c spaceship.c
 OBJ = ${SRC:.c=.o}
 
 all: blasteroids
 
-%.o: %.c
-	${CC} -c ${INCS} ${CFLAGS} $<
+blasteroids.o: blasteroids.c blasteroids.h spaceship.h
+spaceship.o: spaceship.c blasteroids.h spaceship.h
 
-blasteroids: ${OBJ}
+%.o: %.c
+	${CC} -c ${CFLAGS} $<
+
+blasteroids: ${OBJ} spaceship.h
 	${CC} -o $@ ${OBJ} ${LIBS}
 
 clean:

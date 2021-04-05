@@ -1,8 +1,9 @@
-#include <spaceship.h>
 #include <math.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
+#include "blasteroids.h"
+#include "spaceship.h"
 
 Spaceship* init_ship(float init_x, float init_y, ALLEGRO_COLOR color)
 {
@@ -16,12 +17,28 @@ Spaceship* init_ship(float init_x, float init_y, ALLEGRO_COLOR color)
 }
 
 // maybe add accelaration as a parameter
-void move_ship(Spaceship* s)
+void move_ship(Spaceship* s, float turn_speed, float acceleration)
 {
 	// add cosine of heading angle * speed to sx
 	s->sx += cosf(s->heading+PI/2) * (-s->speed);
 	// add sine of heading angle * speed to sy
 	s->sy += sinf(s->heading+PI/2) * (-s->speed);
+
+	// make spaceship appear on the
+	// opposite screen edge again
+	if (s->sx > WIDTH)
+		s->sx = 0.0;
+	else if (s->sx < 0.0)
+		s->sx = WIDTH;
+	if (s->sy > HEIGHT)
+		s->sy = 0.0;
+	else if (s->sy < 0.0)
+		s->sy = HEIGHT;
+
+	s->heading += turn_speed;
+	s->speed += acceleration;
+	if (s->speed < 0.0)
+		s->speed = 0.0;
 }
 
 void draw_ship(Spaceship* s)
