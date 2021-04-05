@@ -35,10 +35,14 @@ void move_ship(Spaceship* s, float turn_speed, float acceleration)
 	else if (s->sy < 0.0)
 		s->sy = HEIGHT;
 
-	s->heading += turn_speed;
-	s->speed += acceleration;
+  // don't turn when standing still
+  if (s->speed > MINIMUM_TURN_SPEED)
+    s->heading += turn_speed * (1.0/FPS);
+	s->speed += acceleration * (1.0/FPS); // multiply with frame time
 	if (s->speed < 0.0)
 		s->speed = 0.0;
+  else if (s->speed > MAX_SPEED)
+    s->speed = MAX_SPEED;
 }
 
 void draw_ship(Spaceship* s)

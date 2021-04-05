@@ -1,10 +1,12 @@
 #include <allegro5/allegro_primitives.h>
 
 #ifndef PI
-#	define PI 3.1416
+#	define PI 3.1416 // for translation calc with angles
 #endif
-#define TURNSPEED 0.05
-#define ACCELERATIONPLUS 0.1
+#define TURNSPEED 1.5
+#define MINIMUM_TURN_SPEED 0.5
+#define ACCELERATIONPLUS 3.0
+#define MAX_SPEED 15
 
 typedef struct Spaceship {
 	float sx;
