@@ -91,6 +91,7 @@ int main()
 
 				draw_ship(spaceship);
 				display_lives(spaceship);
+        display_score(font, spaceship);
 				al_flip_display();
 				redraw = false;
 			}
@@ -102,6 +103,8 @@ int main()
 		if (pthread_join(ship_movement_thread, &movement_input_event_queue) == -1)
 			error("Failed to join thread");
 		al_destroy_event_queue((ALLEGRO_EVENT_QUEUE*)movement_input_event_queue);
+
+    game_over_screen();
 
 		while (1) {
 			al_wait_for_event(queue, &event);
@@ -135,7 +138,7 @@ int main()
 
 
 // thread function for handling the movement of the ship
-// but not its drawing (done in the MAIN loop
+// but not its drawing (done in the MAIN loop)
 void* ship_movement_handler(void* a)
 {
   ALLEGRO_EVENT_QUEUE *queue = NULL;
@@ -199,7 +202,27 @@ void* ship_movement_handler(void* a)
   return queue;
 }
 
-void display_text();
+void display_text_centered(char *txt, float x, float y, float scale, ALLEGRO_COLOR color)
+{
+  ALLEGRO_TRANSFORM transform;
+  al_identity_transform(&transform);
+  al_scale_transform(&transform, scale, scale);
+  al_translate_transform(&transform, x, y);
+  al_use_transform(&transform);
+
+  int text_width = al_get_text_width(font, txt);
+  int text_height = al_get_font_line_height(font);
+  al_draw_text(font, color, -text_width/2, -text_height/2, 0, txt);
+}
+
+void game_over_screen()
+{
+  al_clear_to_color(al_map_rgb(0, 0, 0));
+  display_text_centered("GAME OVER", WIDTH/2, HEIGHT/2, 10, al_map_rgb(255, 255, 255));
+  display_text_centered("PRESS Q TO EXIT OR ANY OTHER KEY TO PLAY AGAIN", WIDTH/2, HEIGHT/2+HEIGHT/4, 2, al_map_rgb(255, 255, 255));
+  display_score(font, spaceship);
+  al_flip_display();
+}
 
 void error(char *msg)
 {

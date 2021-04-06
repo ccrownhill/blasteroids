@@ -1,4 +1,3 @@
-#include <stdio.h> // for debugging
 #include <math.h>
 #include <allegro5/allegro_primitives.h>
 
@@ -17,6 +16,7 @@ Spaceship* init_ship(float init_x, float init_y, ALLEGRO_COLOR color)
 	spaceship->lives = LIVES;
 	spaceship->is_invincible = 1;
 	spaceship->gone = 0;
+  spaceship->score = 0;
 	return spaceship;
 }
 
@@ -71,7 +71,6 @@ void check_for_collisions(Spaceship* s, Asteroid* first_asteroid)
 					s->heading = 0.0;
 					s->is_invincible = 1;
 				}
-				puts("Collision!!!");
 			}
 		}
 	} else { // wait for INVINCIBILITY_TIME seconds
@@ -115,12 +114,23 @@ void display_lives(Spaceship* s)
 	ALLEGRO_TRANSFORM transform;
 	al_identity_transform(&transform);
 	al_translate_transform(&transform, LIVES_X, LIVES_Y);
+  al_use_transform(&transform);
 	int i;
 	for (i = 0; i < s->lives; i++) {
 		draw_ship(lives_spaceship);
 		lives_spaceship->sx += LIVES_X;
 	}
 	free(lives_spaceship);
+}
+
+void display_score(ALLEGRO_FONT* font, Spaceship* s)
+{
+  ALLEGRO_TRANSFORM transform;
+  al_identity_transform(&transform);
+  al_scale_transform(&transform, SCORE_SCALE, SCORE_SCALE);
+  al_translate_transform(&transform, SCORE_X - SPACESHIP_RADIUS, SCORE_Y);
+  al_use_transform(&transform);
+  al_draw_textf(font, al_map_rgb(SCORE_RED, SCORE_GREEN, SCORE_BLUE), 0, 0, 0, "%i", s->score);
 }
 
 void destroy_ship(Spaceship* s)
