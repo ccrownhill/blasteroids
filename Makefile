@@ -6,8 +6,9 @@ OBJ = ${SRC:.c=.o}
 
 all: blasteroids
 
-blasteroids.o: blasteroids.c blasteroids.h spaceship.h
+blasteroids.o: blasteroids.c blasteroids.h spaceship.h asteroid.h
 spaceship.o: spaceship.c blasteroids.h spaceship.h
+asteroid.o: asteroid.c blasteroids.h asteroid.h
 %.o: %.c
 	${CC} -c ${CFLAGS} $<
 

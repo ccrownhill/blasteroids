@@ -6,8 +6,10 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
+
 #include "blasteroids.h"
 #include "spaceship.h"
+#include "asteroid.h"
 
 void error(char *msg)
 {
@@ -20,13 +22,6 @@ ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_FONT* font = NULL;
 Spaceship *spaceship;
-
-void ship_movement_handler_cleanup(void* event_queue)
-{
-  puts("before destroyint queue");
-	al_destroy_event_queue((ALLEGRO_EVENT_QUEUE*)event_queue);
-  puts("after destroyint queue");
-}
 
 void* ship_movement_handler(void* a)
 {
@@ -49,10 +44,9 @@ void* ship_movement_handler(void* a)
 
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
       break;
-
-    if (event.type == ALLEGRO_EVENT_TIMER)
+		else if (event.type == ALLEGRO_EVENT_TIMER)
       move_ship(spaceship, turn_speed, acceleration);
-    if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+		else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
       switch(event.keyboard.keycode) {
         case ALLEGRO_KEY_UP:
           acceleration = ACCELERATIONPLUS;
@@ -98,6 +92,7 @@ int main()
   ALLEGRO_EVENT_QUEUE *queue = NULL;
 
   spaceship = init_ship(WIDTH / 2, HEIGHT / 2, al_map_rgb(255, 255, 255));
+	Asteroid* asteroid = init_asteroid(WIDTH / 2, HEIGHT / 2, al_map_rgb(0, 255, 0)); // create green asteroid at center of screen
 
 	if (!al_init()) {
 		fprintf(stderr, "Failed to init allegro.\n");
@@ -148,21 +143,24 @@ int main()
 
 		if (redraw && al_is_event_queue_empty(queue))
 		{
+			move_asteroid(asteroid);
 			al_clear_to_color(al_map_rgb(0, 0, 0));
 			draw_ship(spaceship);
+			draw_asteroid(asteroid);
 			al_flip_display();
 			redraw = false;
 		}
 	}
 
-  void* result;
-  if (pthread_join(ship_movement_thread, &result) == -1)
+  void* movement_input_event_queue;
+  if (pthread_join(ship_movement_thread, &movement_input_event_queue) == -1)
     error("Failed to join thread");
 	
 	destroy_ship(spaceship);
+	destroy_asteroid(asteroid);
 	al_destroy_display(display);
 	al_destroy_event_queue(queue);
-  al_destroy_event_queue((ALLEGRO_EVENT_QUEUE*)result);
+  al_destroy_event_queue((ALLEGRO_EVENT_QUEUE*)movement_input_event_queue);
 	al_destroy_timer(timer);
 	al_destroy_font(font);
 	return 0;
