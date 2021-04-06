@@ -1,22 +1,54 @@
+#include <stdio.h> // for debugging with puts
 #include <math.h>
 #include <allegro5/allegro_primitives.h>
+
+// includes for random initial movement
+#include <stdlib.h>
+#include <time.h>
 
 #include "blasteroids.h"
 #include "asteroid.h"
 
-Asteroid* init_asteroid(float init_x, float init_y, ALLEGRO_COLOR color)
+// create an asteroid in a random position
+// with a random speed
+// and a random direction of movement
+Asteroid* init_asteroid()
 {
+	struct timespec current_time;
+	clock_gettime(CLOCK_REALTIME, &current_time);
+	srandom(current_time.tv_nsec); // seed with current time in nanoseconds
 	Asteroid* asteroid = malloc(sizeof(Asteroid));
-	asteroid->sx = init_x;
-	asteroid->sy = init_y;
-	asteroid->heading = 0.0;
+	asteroid->sx = ((random()%1001)/1000.0) * WIDTH;
+	asteroid->sy = ((random()%1001)/1000.0) * HEIGHT;
+	asteroid->heading = ((random()%1001)/1000.0) * 2*PI;
 	asteroid->twist = 0.0;
-	asteroid->speed = ASTEROID_MIN_SPEED + (ASTEROID_MAX_SPEED - ASTEROID_MIN_SPEED)/2;
-	asteroid->rot_velocity = ASTEROID_MIN_ROT_SPEED + (ASTEROID_MAX_ROT_SPEED - ASTEROID_MIN_ROT_SPEED)/2;
-	asteroid->scale = 1.0;
+	asteroid->speed = ASTEROID_MIN_SPEED + ((random()%1001)/1000.0)*(ASTEROID_MAX_SPEED - ASTEROID_MIN_SPEED);
+	asteroid->rot_velocity = ASTEROID_MIN_ROT_SPEED + ((random()%1001)/1000.0)*(ASTEROID_MAX_ROT_SPEED - ASTEROID_MIN_ROT_SPEED)/2;
+	asteroid->scale = INIT_SCALE;
 	asteroid->gone = 0;
-	asteroid->color = color;
+	asteroid->color = al_map_rgb(ASTEROID_RED, ASTEROID_GREEN, ASTEROID_BLUE);
+	asteroid->next_asteroid = NULL;
 	return asteroid;
+}
+
+Asteroid* create_asteroid_list(unsigned int num_asteroids)
+{
+	Asteroid* start = init_asteroid();
+	Asteroid* i = start;
+	Asteroid* next = NULL;
+
+	int asteroids_created;
+	for (asteroids_created = 0; asteroids_created < num_asteroids - 1; asteroids_created++, i = next) {
+		next = init_asteroid();
+		i->next_asteroid = next;
+	}
+
+	return start;
+}
+
+void split_asteroid(Asteroid* a)
+{
+	// use SPLIT_ASTEROID_MAX_ANGLE_DIFF and SPLIT_ASTEROID_MIN_ANGLE_DIFF
 }
 
 void move_asteroid(Asteroid* a)
@@ -34,6 +66,14 @@ void move_asteroid(Asteroid* a)
 		a->sy = HEIGHT;
 
 	a->twist += a->rot_velocity * (1.0/FPS);	
+}
+
+void move_asteroid_list(Asteroid* first_in_list)
+{
+	Asteroid* i = first_in_list;
+	for(; i != NULL; i = i->next_asteroid) {
+		move_asteroid(i);
+	}
 }
 
 void draw_asteroid(Asteroid* a)
@@ -58,7 +98,20 @@ void draw_asteroid(Asteroid* a)
 	al_draw_line(0, 15, -20, 20, a->color, 2.0f);
 }
 
-void destroy_asteroid(Asteroid* a)
+void draw_asteroid_list(Asteroid* first_in_list)
 {
-	free(a);
+	Asteroid* i = first_in_list;
+	for(; i != NULL; i = i->next_asteroid) {
+		draw_asteroid(i);
+	}
+}
+
+void destroy_asteroids(Asteroid* first_in_list)
+{
+	Asteroid* i = first_in_list;
+	Asteroid* next = NULL;
+	for (; i != NULL; i = next) {
+		next = i->next_asteroid;
+		free(i);
+	}
 }
