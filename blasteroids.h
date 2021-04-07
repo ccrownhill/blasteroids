@@ -3,15 +3,15 @@
 #define FPS 60
 
 // displaying lives
-#define LIVES_X 30
-#define LIVES_Y 100
+#define SPACESHIP_LIVES_X 30
+#define SPACESHIP_LIVES_Y 100
 // color of lives
-#define LIVES_RED 255
-#define LIVES_GREEN 0
-#define LIVES_BLUE 0
+#define SPACESHIP_LIVES_RED 255
+#define SPACESHIP_LIVES_GREEN 0
+#define SPACESHIP_LIVES_BLUE 0
 
 // displaying score
-#define SCORE_X LIVES_X
+#define SCORE_X SPACESHIP_LIVES_X
 #define SCORE_Y 20
 #define SCORE_SCALE 7
 // score color

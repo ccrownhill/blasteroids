@@ -10,6 +10,7 @@
 #include "blasteroids.h"
 #include "spaceship.h"
 #include "asteroid.h"
+#include "blast.h"
 
 
 ALLEGRO_DISPLAY *display = NULL;
@@ -17,6 +18,7 @@ ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_FONT *font = NULL;
 Spaceship *spaceship;
 Asteroid *first_asteroid;
+Blast *blast_list_start = NULL;
 
 
 int main()
@@ -68,6 +70,7 @@ int main()
 
 		spaceship = init_ship(WIDTH / 2, HEIGHT / 2, al_map_rgb(255, 255, 255));
 		first_asteroid = create_asteroid_list(INIT_ASTEROIDS);
+    blast_list_start = init_blast(WIDTH/2, HEIGHT/2, PI/2);
 
 		pthread_t ship_movement_thread;
 		if (pthread_create(&ship_movement_thread, NULL, ship_movement_handler, NULL) == -1)
@@ -85,6 +88,9 @@ int main()
 			if (redraw && al_is_event_queue_empty(queue))
 			{
 				al_clear_to_color(al_map_rgb(0, 0, 0));
+
+        move_blast_list(blast_list_start);
+        draw_blast_list(blast_list_start);
 
 				move_asteroid_list(first_asteroid);
 				draw_asteroid_list(first_asteroid);
@@ -125,7 +131,8 @@ int main()
 		if (spaceship->gone)
 			break;
 
-		destroy_ship(spaceship);
+    destroy_blasts(blast_list_start);
+		free(spaceship);
 		destroy_asteroids(first_asteroid);
 	}
 	
@@ -166,16 +173,16 @@ void* ship_movement_handler(void* a)
 		} else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
       switch(event.keyboard.keycode) {
         case ALLEGRO_KEY_UP:
-          acceleration = ACCELERATION;
+          acceleration = SPACESHIP_ACCELERATION;
           break;
         case ALLEGRO_KEY_DOWN:
-          acceleration = -ACCELERATION/2; // backward acceleration smaller than forward
+          acceleration = -SPACESHIP_ACCELERATION * SPACESHIP_BACK_TO_FRONT_ACCELERATION_RATIO; // backward acceleration smaller than forward
           break;
         case ALLEGRO_KEY_LEFT:
-          turn_speed = -TURNSPEED;
+          turn_speed = -SPACESHIP_TURNSPEED;
           break;
         case ALLEGRO_KEY_RIGHT:
-          turn_speed = TURNSPEED;
+          turn_speed = SPACESHIP_TURNSPEED;
           break;
       }
     } else if (event.type == ALLEGRO_EVENT_KEY_UP) {

@@ -10,10 +10,10 @@ Spaceship* init_ship(float init_x, float init_y, ALLEGRO_COLOR color)
 	Spaceship* spaceship = malloc(sizeof(Spaceship));
 	spaceship->sx = init_x;
 	spaceship->sy = init_y;
-	spaceship->heading = 0.0;
+	spaceship->heading = PI/2;
 	spaceship->speed = 0.0;
 	spaceship->color = color;
-	spaceship->lives = LIVES;
+	spaceship->lives = SPACESHIP_LIVES;
 	spaceship->is_invincible = 1;
 	spaceship->gone = 0;
   spaceship->score = 0;
@@ -28,9 +28,9 @@ Spaceship* init_ship(float init_x, float init_y, ALLEGRO_COLOR color)
 void move_ship(Spaceship* s, float turn_speed, float acceleration)
 {
 	// add cosine of heading angle * speed to sx
-	s->sx += cosf(s->heading+PI/2) * (-s->speed) * (1.0/FPS);
+	s->sx += cosf(s->heading) * (-s->speed) * (1.0/FPS);
 	// add sine of heading angle * speed to sy
-	s->sy += sinf(s->heading+PI/2) * (-s->speed) * (1.0/FPS);
+	s->sy += sinf(s->heading) * (-s->speed) * (1.0/FPS);
 
 	// make spaceship appear on the
 	// opposite screen edge again
@@ -44,13 +44,13 @@ void move_ship(Spaceship* s, float turn_speed, float acceleration)
 		s->sy = HEIGHT;
 
   // don't turn when standing still
-  if (s->speed > MINIMUM_TURN_SPEED)
+  if (s->speed > SPACESHIP_MIN_TURNSPEED)
     s->heading += turn_speed * (1.0/FPS);
-	s->speed += acceleration * (1.0/FPS); // multiply with frame time
+	s->speed += acceleration * (1.0/FPS);
 	if (s->speed < 0.0)
 		s->speed = 0.0;
-  else if (s->speed > MAX_SPEED)
-    s->speed = MAX_SPEED;
+  else if (s->speed > SPACESHIP_MAX_SPEED)
+    s->speed = SPACESHIP_MAX_SPEED;
 }
 
 void check_for_collisions(Spaceship* s, Asteroid* first_asteroid)
@@ -68,14 +68,14 @@ void check_for_collisions(Spaceship* s, Asteroid* first_asteroid)
 					s->sx = WIDTH/2;
 					s->sy = HEIGHT/2;
 					s->speed = 0.0;
-					s->heading = 0.0;
+					s->heading = PI/2;
 					s->is_invincible = 1;
 				}
 			}
 		}
-	} else { // wait for INVINCIBILITY_TIME seconds
+	} else { // wait for SPACESHIP_INVINCIBILITY_TIME seconds
 		invincibility_time_counter += (1.0/FPS);
-		if (invincibility_time_counter > INVINCIBILITY_TIME) {
+		if (invincibility_time_counter > SPACESHIP_INVINCIBILITY_TIME) {
 			s->is_invincible = 0;
 			invincibility_time_counter = 0;
 		}
@@ -87,15 +87,15 @@ void draw_ship(Spaceship* s)
 	static float blink_time_counter = 0.0;
 	if (s->is_invincible) {
 		blink_time_counter += 1.0/FPS;
-		if (blink_time_counter > BLINK_TIME*2)
+		if (blink_time_counter > SPACESHIP_BLINK_TIME*2)
 			blink_time_counter = 0.0;
-		else if (blink_time_counter > BLINK_TIME) {
+		else if (blink_time_counter > SPACESHIP_BLINK_TIME) {
 			return;
 		}
 	}
 	ALLEGRO_TRANSFORM transform;
 	al_identity_transform(&transform);
-	al_rotate_transform(&transform, s->heading);
+	al_rotate_transform(&transform, s->heading-PI/2);
 	al_translate_transform(&transform, s->sx, s->sy);
 	al_use_transform(&transform);
 	al_draw_line(-8, 9, 0, -11, s->color, 3.0f);
@@ -108,17 +108,18 @@ void display_lives(Spaceship* s)
 {
 	Spaceship* lives_spaceship = malloc(sizeof(Spaceship));
 	memset(lives_spaceship, 0, sizeof(Spaceship));
-	lives_spaceship->sx = LIVES_X;
-	lives_spaceship->sy = LIVES_Y;
-	lives_spaceship->color = al_map_rgb(LIVES_RED, LIVES_GREEN, LIVES_BLUE);
+	lives_spaceship->sx = SPACESHIP_LIVES_X;
+	lives_spaceship->sy = SPACESHIP_LIVES_Y;
+  lives_spaceship->heading = PI/2; // make them point upwards
+	lives_spaceship->color = al_map_rgb(SPACESHIP_LIVES_RED, SPACESHIP_LIVES_GREEN, SPACESHIP_LIVES_BLUE);
 	ALLEGRO_TRANSFORM transform;
 	al_identity_transform(&transform);
-	al_translate_transform(&transform, LIVES_X, LIVES_Y);
+	al_translate_transform(&transform, SPACESHIP_LIVES_X, SPACESHIP_LIVES_Y);
   al_use_transform(&transform);
 	int i;
 	for (i = 0; i < s->lives; i++) {
 		draw_ship(lives_spaceship);
-		lives_spaceship->sx += LIVES_X;
+		lives_spaceship->sx += SPACESHIP_LIVES_X;
 	}
 	free(lives_spaceship);
 }
@@ -131,9 +132,4 @@ void display_score(ALLEGRO_FONT* font, Spaceship* s)
   al_translate_transform(&transform, SCORE_X - SPACESHIP_RADIUS, SCORE_Y);
   al_use_transform(&transform);
   al_draw_textf(font, al_map_rgb(SCORE_RED, SCORE_GREEN, SCORE_BLUE), 0, 0, 0, "%i", s->score);
-}
-
-void destroy_ship(Spaceship* s)
-{
-	free(s);
 }

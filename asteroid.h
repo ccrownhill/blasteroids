@@ -1,5 +1,8 @@
 #include <allegro5/allegro_primitives.h>
 
+// used for initializing properties randomly
+#define RANDOM_BETWEEN_ZERO_AND_ONE ((random()%1001)/1000.0)
+
 #define INIT_ASTEROIDS 5
 #define INIT_SCALE 2.0
 #define SPLITS 3

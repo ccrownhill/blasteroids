@@ -1,4 +1,3 @@
-#include <stdio.h> // for debugging with puts
 #include <math.h>
 #include <allegro5/allegro_primitives.h>
 
@@ -18,12 +17,12 @@ Asteroid* init_asteroid()
 	clock_gettime(CLOCK_REALTIME, &current_time);
 	srandom(current_time.tv_nsec); // seed with current time in nanoseconds
 	Asteroid* asteroid = malloc(sizeof(Asteroid));
-	asteroid->sx = ((random()%1001)/1000.0) * WIDTH;
-	asteroid->sy = ((random()%1001)/1000.0) * HEIGHT;
-	asteroid->heading = ((random()%1001)/1000.0) * 2*PI;
+	asteroid->sx = RANDOM_BETWEEN_ZERO_AND_ONE * WIDTH;
+	asteroid->sy = RANDOM_BETWEEN_ZERO_AND_ONE * HEIGHT;
+	asteroid->heading = RANDOM_BETWEEN_ZERO_AND_ONE * 2*PI;
 	asteroid->twist = 0.0;
-	asteroid->speed = ASTEROID_MIN_SPEED + ((random()%1001)/1000.0)*(ASTEROID_MAX_SPEED - ASTEROID_MIN_SPEED);
-	asteroid->rot_velocity = ASTEROID_MIN_ROT_SPEED + ((random()%1001)/1000.0)*(ASTEROID_MAX_ROT_SPEED - ASTEROID_MIN_ROT_SPEED)/2;
+	asteroid->speed = ASTEROID_MIN_SPEED + RANDOM_BETWEEN_ZERO_AND_ONE*(ASTEROID_MAX_SPEED - ASTEROID_MIN_SPEED);
+	asteroid->rot_velocity = ASTEROID_MIN_ROT_SPEED + RANDOM_BETWEEN_ZERO_AND_ONE*(ASTEROID_MAX_ROT_SPEED - ASTEROID_MIN_ROT_SPEED)/2;
 	asteroid->scale = INIT_SCALE;
 	asteroid->gone = 0;
 	asteroid->color = al_map_rgb(ASTEROID_RED, ASTEROID_GREEN, ASTEROID_BLUE);
