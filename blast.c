@@ -5,6 +5,7 @@
 
 #include "blasteroids.h"
 #include "blast.h"
+#include "asteroid.h"
 
 Blast* init_blast(float init_x, float init_y, float heading)
 {
@@ -52,18 +53,41 @@ void move_blast_list(Blast* list_start)
   }
 }
 
+void check_for_blast_asteroid_collisions(Blast* blast_list_start, Asteroid* asteroid_list_start)
+{
+  Blast* blast_i = blast_list_start;
+  float blast_center_x;
+  float blast_center_y;
+  float blast_asteroid_distance;
+  Asteroid* asteroid_i;
+  for (; blast_i != NULL; blast_i = blast_i->next) {
+    if (blast_i->gone) { continue; }
+    for (asteroid_i = asteroid_list_start; asteroid_i != NULL; asteroid_i = asteroid_i->next) {
+      if (asteroid_i->gone) { continue; }
+      blast_center_x = blast_i->sx + (-cosf(blast_i->heading)) * BLAST_LENGTH/2;
+      blast_center_y = blast_i->sy + (-sinf(blast_i->heading)) * BLAST_LENGTH/2;
+      blast_asteroid_distance = sqrtf(SQUARE(blast_center_x - asteroid_i->sx) + SQUARE(blast_center_y - asteroid_i->sy));
+      if (blast_asteroid_distance < ASTEROID_RADIUS*asteroid_i->scale) {
+        asteroid_i->gone = 1;
+        blast_i->gone = 1;
+        score = score + ASTEROID_HIT_SCORE_PLUS;
+        split_asteroid(&asteroid_i);
+      }
+    }
+  }
+}
+
 void draw_blast(Blast* blast)
 {
-	if (!blast->gone) {
-		// coordinates of other end of line
-		float x_endpoint_diff = (-cosf(blast->heading))*BLAST_LENGTH; // use negative angle to account for reversed coordinate system
-		float y_endpoint_diff = (-sinf(blast->heading))*BLAST_LENGTH;
-		ALLEGRO_TRANSFORM transform;
-		al_identity_transform(&transform);
-		al_translate_transform(&transform, blast->sx, blast->sy);
-		al_use_transform(&transform);
-		al_draw_line(0, 0, x_endpoint_diff, y_endpoint_diff, blast->color, BLAST_THICKNESS);
-	}
+  if (blast->gone) { return; }
+  // coordinates of other end of line
+  float x_endpoint_diff = (-cosf(blast->heading))*BLAST_LENGTH; // use negative angle to account for reversed coordinate system
+  float y_endpoint_diff = (-sinf(blast->heading))*BLAST_LENGTH;
+  ALLEGRO_TRANSFORM transform;
+  al_identity_transform(&transform);
+  al_translate_transform(&transform, blast->sx, blast->sy);
+  al_use_transform(&transform);
+  al_draw_line(0, 0, x_endpoint_diff, y_endpoint_diff, blast->color, BLAST_THICKNESS);
 }
 
 void draw_blast_list(Blast* list_start)

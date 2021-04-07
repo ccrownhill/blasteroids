@@ -16,11 +16,10 @@ Spaceship* init_ship(float init_x, float init_y, ALLEGRO_COLOR color)
 	spaceship->lives = SPACESHIP_LIVES;
 	spaceship->is_invincible = 1;
 	spaceship->gone = 0;
-  spaceship->score = 0;
 	return spaceship;
 }
 
-// TODO
+// Possible improvement:
 // Add x and y speed variable to struct
 // so that only through acceleration the ship can be turned
 // that way the cos(heading)*acceleration would be added to the x speed
@@ -60,6 +59,7 @@ void check_for_ship_asteroid_collisions(Spaceship* s, Asteroid* asteroid_list_st
 		Asteroid* i = asteroid_list_start;
 		float distance;
 		for(; i != NULL; i = i->next) {
+      if (i->gone) { continue; }
 			distance = sqrtf((s->sx - i->sx)*(s->sx - i->sx) + (s->sy - i->sy)*(s->sy - i->sy));
 			if (distance < ASTEROID_RADIUS*i->scale + SPACESHIP_RADIUS) {
 				if (--(s->lives) <= 0) {
@@ -84,26 +84,25 @@ void check_for_ship_asteroid_collisions(Spaceship* s, Asteroid* asteroid_list_st
 
 void draw_ship(Spaceship* s)
 {
-	if (!s->gone) {
-		static float blink_time_counter = 0.0;
-		if (s->is_invincible) {
-			blink_time_counter += 1.0/FPS;
-			if (blink_time_counter > SPACESHIP_BLINK_TIME*2)
-				blink_time_counter = 0.0;
-			else if (blink_time_counter > SPACESHIP_BLINK_TIME) {
-				return;
-			}
-		}
-		ALLEGRO_TRANSFORM transform;
-		al_identity_transform(&transform);
-		al_rotate_transform(&transform, s->heading-PI/2);
-		al_translate_transform(&transform, s->sx, s->sy);
-		al_use_transform(&transform);
-		al_draw_line(-8, 9, 0, -11, s->color, 3.0f);
-		al_draw_line(0, -11, 8, 9, s->color, 3.0f);
-		al_draw_line(-6, 4, -1, 4, s->color, 3.0f);
-		al_draw_line(6, 4, 1, 4, s->color, 3.0f);
-	}
+  if (s->gone) { return; }
+  static float blink_time_counter = 0.0;
+  if (s->is_invincible) {
+    blink_time_counter += 1.0/FPS;
+    if (blink_time_counter > SPACESHIP_BLINK_TIME*2)
+      blink_time_counter = 0.0;
+    else if (blink_time_counter > SPACESHIP_BLINK_TIME) {
+      return;
+    }
+  }
+  ALLEGRO_TRANSFORM transform;
+  al_identity_transform(&transform);
+  al_rotate_transform(&transform, s->heading-PI/2);
+  al_translate_transform(&transform, s->sx, s->sy);
+  al_use_transform(&transform);
+  al_draw_line(-8, 9, 0, -11, s->color, 3.0f);
+  al_draw_line(0, -11, 8, 9, s->color, 3.0f);
+  al_draw_line(-6, 4, -1, 4, s->color, 3.0f);
+  al_draw_line(6, 4, 1, 4, s->color, 3.0f);
 }
 
 void display_lives(Spaceship* s)
@@ -124,14 +123,4 @@ void display_lives(Spaceship* s)
 		lives_spaceship->sx += SPACESHIP_LIVES_X;
 	}
 	free(lives_spaceship);
-}
-
-void display_score(ALLEGRO_FONT* font, Spaceship* s)
-{
-  ALLEGRO_TRANSFORM transform;
-  al_identity_transform(&transform);
-  al_scale_transform(&transform, SCORE_SCALE, SCORE_SCALE);
-  al_translate_transform(&transform, SCORE_X - SPACESHIP_RADIUS, SCORE_Y);
-  al_use_transform(&transform);
-  al_draw_textf(font, al_map_rgb(SCORE_RED, SCORE_GREEN, SCORE_BLUE), 0, 0, 0, "%i", s->score);
 }

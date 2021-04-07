@@ -20,7 +20,7 @@ Spaceship *spaceship = NULL;
 Asteroid *asteroid_list_start = NULL;
 Blast *blast_list_start = NULL;
 pthread_t movement_thread;
-int score = 0;
+int score;
 
 
 int main()
@@ -69,6 +69,7 @@ int main()
 	al_start_timer(timer);
 
 	while (1) {
+    score = 0;
 
 		spaceship = init_ship(WIDTH / 2, HEIGHT / 2, al_map_rgb(255, 255, 255));
 		asteroid_list_start = create_asteroid_list(INIT_ASTEROIDS);
@@ -79,7 +80,7 @@ int main()
 
 
 		// MAIN loop
-		while (!spaceship->gone) {
+		while (!spaceship->gone && asteroid_list_start != NULL) {
 			al_wait_for_event(queue, &event);
 			if (event.type == ALLEGRO_EVENT_TIMER)
 				redraw = true;
@@ -97,7 +98,7 @@ int main()
 				// spaceship drawing
 				draw_ship(spaceship);
 				display_lives(spaceship);
-        display_score(font, spaceship);
+        display_score(font);
 				al_flip_display();
 				redraw = false;
 			}
@@ -110,7 +111,12 @@ int main()
 			error("Failed to join thread");
 		al_destroy_event_queue((ALLEGRO_EVENT_QUEUE*)movement_input_event_queue);
 
-    game_over_screen();
+    if (spaceship->gone)
+      quit_or_again_screen("GAME OVER!");
+    else if (asteroid_list_start == NULL)
+      quit_or_again_screen("VICTORY!");
+    else
+      quit_or_again_screen("STOPPED!");
 
 		while (1) {
 			al_wait_for_event(queue, &event);
@@ -162,7 +168,7 @@ void* movement_handler(void* a)
   float turn_speed = 0.0;
   float acceleration = 0.0;
 	ALLEGRO_EVENT event;
-  while (!spaceship->gone) {
+  while (!spaceship->gone && asteroid_list_start != NULL) {
     al_wait_for_event(queue, &event);
 
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -181,6 +187,7 @@ void* movement_handler(void* a)
 			move_blast_list(blast_list_start);
 			if (blast_list_start != NULL) // don't do cleaning if list is empty
 				clean_gone_blasts(&blast_list_start);
+      check_for_blast_asteroid_collisions(blast_list_start, asteroid_list_start);
 		} else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
       switch(event.keyboard.keycode) {
         case ALLEGRO_KEY_UP:
@@ -223,6 +230,16 @@ void* movement_handler(void* a)
   return queue;
 }
 
+void display_score(ALLEGRO_FONT* font)
+{
+  ALLEGRO_TRANSFORM transform;
+  al_identity_transform(&transform);
+  al_scale_transform(&transform, SCORE_SCALE, SCORE_SCALE);
+  al_translate_transform(&transform, SCORE_X - SPACESHIP_RADIUS, SCORE_Y);
+  al_use_transform(&transform);
+  al_draw_textf(font, al_map_rgb(SCORE_RED, SCORE_GREEN, SCORE_BLUE), 0, 0, 0, "%i", score);
+}
+
 void display_text_centered(char *txt, float x, float y, float scale, ALLEGRO_COLOR color)
 {
   ALLEGRO_TRANSFORM transform;
@@ -236,12 +253,12 @@ void display_text_centered(char *txt, float x, float y, float scale, ALLEGRO_COL
   al_draw_text(font, color, -text_width/2, -text_height/2, 0, txt);
 }
 
-void game_over_screen()
+void quit_or_again_screen(char *title)
 {
   al_clear_to_color(al_map_rgb(0, 0, 0));
-  display_text_centered("GAME OVER", WIDTH/2, HEIGHT/2, 10, al_map_rgb(255, 255, 255));
+  display_text_centered(title, WIDTH/2, HEIGHT/2, 10, al_map_rgb(255, 255, 255));
   display_text_centered("PRESS Q TO EXIT OR ANY OTHER KEY TO PLAY AGAIN", WIDTH/2, HEIGHT/2+HEIGHT/4, 2, al_map_rgb(255, 255, 255));
-  display_score(font, spaceship);
+  display_score(font);
   al_flip_display();
 }
 

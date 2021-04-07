@@ -3,14 +3,14 @@
 // used for initializing properties randomly
 #define RANDOM_BETWEEN_ZERO_AND_ONE ((random()%1001)/1000.0)
 
-#define INIT_ASTEROIDS 1
-#define INIT_SCALE 2.0
-#define SPLITS 3
+#define INIT_ASTEROIDS 5
+#define ASTEROID_INIT_SCALE 2.0
+#define MAX_SPLITS 2
 #define ASTEROID_MIN_SPEED 50 // in pixels/s
 #define ASTEROID_MAX_SPEED 300 // in pixels/s
 #define ASTEROID_MIN_ROT_SPEED 0.7 // in radians/s
 #define ASTEROID_MAX_ROT_SPEED 6 // in radians/s
-#define ASTEROID_RADIUS 15
+#define ASTEROID_RADIUS 25
 
 // splitting
 #define SPLIT_ASTEROID_MAX_ANGLE_DIFF 1.5 // ~90 degrees
@@ -37,8 +37,9 @@ typedef struct Asteroid {
 #define ASTEROID_DEFINED
 #endif
 
-Asteroid* init_asteroid();
+Asteroid* init_asteroid(float init_x, float init_y, float heading, float scale);
 Asteroid* create_asteroid_list(unsigned int num_asteroids);
+void split_asteroid(Asteroid** a);
 void move_asteroid(Asteroid* a);
 void move_asteroid_list(Asteroid* list_start);
 void draw_asteroid(Asteroid* a);

@@ -11,7 +11,7 @@ blast.h: spaceship.h
 blasteroids.o: blasteroids.c blasteroids.h spaceship.h asteroid.h blast.h
 spaceship.o: spaceship.c blasteroids.h spaceship.h asteroid.h
 asteroid.o: asteroid.c blasteroids.h asteroid.h
-blast.o: blast.c blast.h blasteroids.h
+blast.o: blast.c blast.h blasteroids.h asteroid.h
 %.o: %.c
 	${CC} -c ${CFLAGS} $<
 

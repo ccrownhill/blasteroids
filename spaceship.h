@@ -2,7 +2,7 @@
 #include <allegro5/allegro_font.h>
 #include "asteroid.h"
 
-#ifndef SPACESHIP
+#ifndef _SPACESHIP
 
 #define SPACESHIP_LIVES 3
 #define SPACESHIP_TURNSPEED 1.5 // radians/s
@@ -22,7 +22,6 @@ typedef struct Spaceship {
 	unsigned int lives:3;
 	unsigned int is_invincible:1;
 	unsigned int gone:1;
-  unsigned int score;
 	ALLEGRO_COLOR color;
 } Spaceship;
 
@@ -31,7 +30,6 @@ void move_ship(Spaceship* s, float turn_speed, float acceleration);
 void check_for_ship_asteroid_collisions(Spaceship* s, Asteroid* first_asteroid);
 void draw_ship(Spaceship* s);
 void display_lives(Spaceship* s);
-void display_score(ALLEGRO_FONT* font, Spaceship* s);
 
 #endif
-#define SPACESHIP
+#define _SPACESHIP
