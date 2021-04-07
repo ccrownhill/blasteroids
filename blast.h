@@ -16,9 +16,10 @@ typedef struct Blast {
 } Blast;
 
 Blast* init_blast(float init_x, float init_y, float heading);
+void shoot_blast_from_spaceship(Spaceship* s, Blast** list_start);
 void move_blast(Blast* blast);
 void move_blast_list(Blast* list_start);
 void draw_blast(Blast* blast);
 void draw_blast_list(Blast* list_start);
-void clean_gone_blasts(Blast* list_start);
+void clean_gone_blasts(Blast** list_start);
 void destroy_blasts(Blast* list_start);

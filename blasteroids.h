@@ -23,7 +23,9 @@
 # define PI 3.1416 // for translation calc with angles
 #endif
 
-void* ship_movement_handler(void* a);
-void display_text(char *txt, float x, float y, float scale, ALLEGRO_COLOR color);
+void* movement_handler(void* a);
+void display_text_centered(char *txt, float x, float y, float scale, ALLEGRO_COLOR color);
 void game_over_screen();
 void error(char *msg);
+
+extern int score;

@@ -28,7 +28,7 @@ typedef struct Spaceship {
 
 Spaceship* init_ship(float init_x, float init_y, ALLEGRO_COLOR color);
 void move_ship(Spaceship* s, float turn_speed, float acceleration);
-void check_for_collisions(Spaceship* s, Asteroid* first_asteroid);
+void check_for_ship_asteroid_collisions(Spaceship* s, Asteroid* first_asteroid);
 void draw_ship(Spaceship* s);
 void display_lives(Spaceship* s);
 void display_score(ALLEGRO_FONT* font, Spaceship* s);

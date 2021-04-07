@@ -16,9 +16,11 @@
 ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_FONT *font = NULL;
-Spaceship *spaceship;
-Asteroid *first_asteroid;
+Spaceship *spaceship = NULL;
+Asteroid *asteroid_list_start = NULL;
 Blast *blast_list_start = NULL;
+pthread_t movement_thread;
+int score = 0;
 
 
 int main()
@@ -69,11 +71,10 @@ int main()
 	while (1) {
 
 		spaceship = init_ship(WIDTH / 2, HEIGHT / 2, al_map_rgb(255, 255, 255));
-		first_asteroid = create_asteroid_list(INIT_ASTEROIDS);
-    blast_list_start = init_blast(WIDTH/2, HEIGHT/2, PI/2);
+		asteroid_list_start = create_asteroid_list(INIT_ASTEROIDS);
+    blast_list_start = NULL;
 
-		pthread_t ship_movement_thread;
-		if (pthread_create(&ship_movement_thread, NULL, ship_movement_handler, NULL) == -1)
+		if (pthread_create(&movement_thread, NULL, movement_handler, NULL) == -1)
 			error("Failed to create user input thread");
 
 
@@ -89,12 +90,11 @@ int main()
 			{
 				al_clear_to_color(al_map_rgb(0, 0, 0));
 
-        move_blast_list(blast_list_start);
+				// draw asteroids
+				draw_asteroid_list(asteroid_list_start);
+				// draw blasts
         draw_blast_list(blast_list_start);
-
-				move_asteroid_list(first_asteroid);
-				draw_asteroid_list(first_asteroid);
-
+				// spaceship drawing
 				draw_ship(spaceship);
 				display_lives(spaceship);
         display_score(font, spaceship);
@@ -106,7 +106,7 @@ int main()
 		al_stop_timer(timer);
 
 		void* movement_input_event_queue;
-		if (pthread_join(ship_movement_thread, &movement_input_event_queue) == -1)
+		if (pthread_join(movement_thread, &movement_input_event_queue) == -1)
 			error("Failed to join thread");
 		al_destroy_event_queue((ALLEGRO_EVENT_QUEUE*)movement_input_event_queue);
 
@@ -133,7 +133,7 @@ int main()
 
     destroy_blasts(blast_list_start);
 		free(spaceship);
-		destroy_asteroids(first_asteroid);
+		destroy_asteroids(asteroid_list_start);
 	}
 	
 	al_destroy_display(display);
@@ -146,7 +146,7 @@ int main()
 
 // thread function for handling the movement of the ship
 // but not its drawing (done in the MAIN loop)
-void* ship_movement_handler(void* a)
+void* movement_handler(void* a)
 {
   ALLEGRO_EVENT_QUEUE *queue = NULL;
 
@@ -168,8 +168,19 @@ void* ship_movement_handler(void* a)
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
       break;
 		else if (event.type == ALLEGRO_EVENT_TIMER) {
+			// ship movement
       move_ship(spaceship, turn_speed, acceleration);
-			check_for_collisions(spaceship, first_asteroid);
+			check_for_ship_asteroid_collisions(spaceship, asteroid_list_start);
+
+			// asteroid movement
+			move_asteroid_list(asteroid_list_start);
+			if (asteroid_list_start != NULL)
+				clean_gone_asteroids(&asteroid_list_start);
+
+			// blast movement
+			move_blast_list(blast_list_start);
+			if (blast_list_start != NULL) // don't do cleaning if list is empty
+				clean_gone_blasts(&blast_list_start);
 		} else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
       switch(event.keyboard.keycode) {
         case ALLEGRO_KEY_UP:
@@ -184,6 +195,9 @@ void* ship_movement_handler(void* a)
         case ALLEGRO_KEY_RIGHT:
           turn_speed = SPACESHIP_TURNSPEED;
           break;
+				case ALLEGRO_KEY_SPACE:
+					shoot_blast_from_spaceship(spaceship, &blast_list_start);
+					break;
       }
     } else if (event.type == ALLEGRO_EVENT_KEY_UP) {
       switch(event.keyboard.keycode) {

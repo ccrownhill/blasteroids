@@ -3,7 +3,7 @@
 // used for initializing properties randomly
 #define RANDOM_BETWEEN_ZERO_AND_ONE ((random()%1001)/1000.0)
 
-#define INIT_ASTEROIDS 5
+#define INIT_ASTEROIDS 1
 #define INIT_SCALE 2.0
 #define SPLITS 3
 #define ASTEROID_MIN_SPEED 50 // in pixels/s
@@ -32,7 +32,7 @@ typedef struct Asteroid {
 	float scale;
 	unsigned int gone:1; // has it been destroyed
 	ALLEGRO_COLOR color;
-	struct Asteroid* next_asteroid;
+	struct Asteroid* next;
 } Asteroid;
 #define ASTEROID_DEFINED
 #endif
@@ -40,7 +40,8 @@ typedef struct Asteroid {
 Asteroid* init_asteroid();
 Asteroid* create_asteroid_list(unsigned int num_asteroids);
 void move_asteroid(Asteroid* a);
-void move_asteroid_list(Asteroid* first_in_list);
+void move_asteroid_list(Asteroid* list_start);
 void draw_asteroid(Asteroid* a);
-void draw_asteroid_list(Asteroid* first_in_list);
-void destroy_asteroids(Asteroid* first_in_list);
+void draw_asteroid_list(Asteroid* list_start);
+void clean_gone_asteroids(Asteroid** list_start);
+void destroy_asteroids(Asteroid* list_start);

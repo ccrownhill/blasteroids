@@ -16,7 +16,7 @@ Asteroid* init_asteroid()
 	struct timespec current_time;
 	clock_gettime(CLOCK_REALTIME, &current_time);
 	srandom(current_time.tv_nsec); // seed with current time in nanoseconds
-	Asteroid* asteroid = malloc(sizeof(Asteroid));
+	Asteroid* asteroid = (Asteroid*)malloc(sizeof(Asteroid));
 	asteroid->sx = RANDOM_BETWEEN_ZERO_AND_ONE * WIDTH;
 	asteroid->sy = RANDOM_BETWEEN_ZERO_AND_ONE * HEIGHT;
 	asteroid->heading = RANDOM_BETWEEN_ZERO_AND_ONE * 2*PI;
@@ -26,7 +26,7 @@ Asteroid* init_asteroid()
 	asteroid->scale = INIT_SCALE;
 	asteroid->gone = 0;
 	asteroid->color = al_map_rgb(ASTEROID_RED, ASTEROID_GREEN, ASTEROID_BLUE);
-	asteroid->next_asteroid = NULL;
+	asteroid->next = NULL;
 	return asteroid;
 }
 
@@ -39,7 +39,7 @@ Asteroid* create_asteroid_list(unsigned int num_asteroids)
 	int asteroids_created;
 	for (asteroids_created = 0; asteroids_created < num_asteroids - 1; asteroids_created++, i = next) {
 		next = init_asteroid();
-		i->next_asteroid = next;
+		i->next = next;
 	}
 
 	return start;
@@ -67,50 +67,71 @@ void move_asteroid(Asteroid* a)
 	a->twist += a->rot_velocity * (1.0/FPS);	
 }
 
-void move_asteroid_list(Asteroid* first_in_list)
+void move_asteroid_list(Asteroid* list_start)
 {
-	Asteroid* i = first_in_list;
-	for(; i != NULL; i = i->next_asteroid) {
+	Asteroid* i = list_start;
+	for(; i != NULL; i = i->next) {
 		move_asteroid(i);
 	}
 }
 
 void draw_asteroid(Asteroid* a)
 {
-	ALLEGRO_TRANSFORM transform;
-	al_identity_transform(&transform);
-	al_scale_transform(&transform, a->scale, a->scale);
-	al_rotate_transform(&transform, a->twist);
-	al_translate_transform(&transform, a->sx, a->sy);
-	al_use_transform(&transform);
-	al_draw_line(-20, 20, -25, 5, a->color, 2.0f);
-	al_draw_line(-25, 5, -25, -10, a->color, 2.0f);
-	al_draw_line(-25, -10, -5, -10, a->color, 2.0f);
-	al_draw_line(-5, -10, -10, -20, a->color, 2.0f);
-	al_draw_line(-10, -20, 5, -20, a->color, 2.0f);
-	al_draw_line(5, -20, 20, -10, a->color, 2.0f);
-	al_draw_line(20, -10, 20, -5, a->color, 2.0f);
-	al_draw_line(20, -5, 0, 0, a->color, 2.0f);
-	al_draw_line(0, 0, 20, 10, a->color, 2.0f);
-	al_draw_line(20, 10, 10, 20, a->color, 2.0f);
-	al_draw_line(10, 20, 0, 15, a->color, 2.0f);
-	al_draw_line(0, 15, -20, 20, a->color, 2.0f);
+	if (!a->gone) {
+		ALLEGRO_TRANSFORM transform;
+		al_identity_transform(&transform);
+		al_scale_transform(&transform, a->scale, a->scale);
+		al_rotate_transform(&transform, a->twist);
+		al_translate_transform(&transform, a->sx, a->sy);
+		al_use_transform(&transform);
+		al_draw_line(-20, 20, -25, 5, a->color, 2.0f);
+		al_draw_line(-25, 5, -25, -10, a->color, 2.0f);
+		al_draw_line(-25, -10, -5, -10, a->color, 2.0f);
+		al_draw_line(-5, -10, -10, -20, a->color, 2.0f);
+		al_draw_line(-10, -20, 5, -20, a->color, 2.0f);
+		al_draw_line(5, -20, 20, -10, a->color, 2.0f);
+		al_draw_line(20, -10, 20, -5, a->color, 2.0f);
+		al_draw_line(20, -5, 0, 0, a->color, 2.0f);
+		al_draw_line(0, 0, 20, 10, a->color, 2.0f);
+		al_draw_line(20, 10, 10, 20, a->color, 2.0f);
+		al_draw_line(10, 20, 0, 15, a->color, 2.0f);
+		al_draw_line(0, 15, -20, 20, a->color, 2.0f);
+	}
 }
 
-void draw_asteroid_list(Asteroid* first_in_list)
+void draw_asteroid_list(Asteroid* list_start)
 {
-	Asteroid* i = first_in_list;
-	for(; i != NULL; i = i->next_asteroid) {
+	Asteroid* i = list_start;
+	for(; i != NULL; i = i->next) {
 		draw_asteroid(i);
 	}
 }
 
-void destroy_asteroids(Asteroid* first_in_list)
+void clean_gone_asteroids(Asteroid** list_start)
 {
-	Asteroid* i = first_in_list;
+	Asteroid* prev = NULL;
+	Asteroid* current = *list_start;
+	Asteroid* next = NULL;
+	for (; current != NULL; current = next) {
+		next = current->next;
+		if (current->gone) {
+			if (prev != NULL)
+				prev->next = next;
+			else
+				*list_start = next;
+			free(current);
+		} else {
+			prev = current;
+		}
+	}
+}
+
+void destroy_asteroids(Asteroid* list_start)
+{
+	Asteroid* i = list_start;
 	Asteroid* next = NULL;
 	for (; i != NULL; i = next) {
-		next = i->next_asteroid;
+		next = i->next;
 		free(i);
 	}
 }
