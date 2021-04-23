@@ -10,7 +10,7 @@ For handling user input and video display this game is using basic multithreadin
 
 ## Compilation
 
-Compile with
+Compile with (after [Allegro](https://github.com/liballeg/allegro5) has been installed):
 
 ```
 $ make blasteroids
