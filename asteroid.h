@@ -1,3 +1,6 @@
+#ifndef ASTEROID_H
+#define ASTEROID_H
+
 #include <allegro5/allegro_primitives.h>
 
 // used for initializing properties randomly
@@ -21,7 +24,6 @@
 #define ASTEROID_GREEN 155
 #define ASTEROID_BLUE 155
 
-#ifndef ASTEROID_DEFINED
 typedef struct Asteroid {
 	float sx;
 	float sy;
@@ -34,8 +36,6 @@ typedef struct Asteroid {
 	ALLEGRO_COLOR color;
 	struct Asteroid* next;
 } Asteroid;
-#define ASTEROID_DEFINED
-#endif
 
 Asteroid* init_asteroid(float init_x, float init_y, float heading, float scale);
 Asteroid* create_asteroid_list(unsigned int num_asteroids);
@@ -46,3 +46,5 @@ void draw_asteroid(Asteroid* a);
 void draw_asteroid_list(Asteroid* list_start);
 void clean_gone_asteroids(Asteroid** list_start);
 void destroy_asteroids(Asteroid* list_start);
+
+#endif

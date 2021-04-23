@@ -1,3 +1,6 @@
+#ifndef BLAST_H
+#define BLAST_H
+
 #include "spaceship.h"
 
 #define BLAST_COLOR al_map_rgb(255, 0, 0) // red
@@ -24,3 +27,5 @@ void draw_blast(Blast* blast);
 void draw_blast_list(Blast* list_start);
 void clean_gone_blasts(Blast** list_start);
 void destroy_blasts(Blast* list_start);
+
+#endif

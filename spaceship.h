@@ -1,8 +1,9 @@
+#ifndef SPACESHIP_H
+#define SPACESHIP_H
+
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 #include "asteroid.h"
-
-#ifndef _SPACESHIP
 
 #define SPACESHIP_LIVES 3
 #define SPACESHIP_TURNSPEED 1.5 // radians/s
@@ -32,4 +33,3 @@ void draw_ship(Spaceship* s);
 void display_lives(Spaceship* s);
 
 #endif
-#define _SPACESHIP

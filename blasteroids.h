@@ -1,5 +1,7 @@
-#include <allegro5/allegro_font.h>
+#ifndef BLASTEROIDS_H
+#define BLASTEROIDS_H
 
+#include <allegro5/allegro_font.h>
 
 #define WIDTH 1000 // 640
 #define HEIGHT 720 // 480
@@ -36,3 +38,5 @@ void quit_or_again_screen(char *title);
 void error(char *msg);
 
 extern int score;
+
+#endif
